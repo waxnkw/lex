@@ -1,4 +1,3 @@
-from LexPreprocess import is_op
 import networkx as nx
 from pylab import show
 
@@ -57,7 +56,6 @@ def construct_single_char(c):
     s1 = State(False)
     s2 = State(False)
     s1.add_edge(s2, c)
-
     am = Automaton()
     am.states.append(s1)
     am.states.append(s2)
@@ -148,6 +146,7 @@ class Automaton(object):
             if state.is_end_state:
                 ret.append(state)
         return ret
+
 
 class Table(object):
     """
@@ -247,8 +246,8 @@ def closure_one_automaton(a):
                           /-epsilon-e3-\
                          ↙             \
         s1-e1-epsilon--->s3------a------>s4--epsilon---e4-> s2
-         \                                            ↗
-          \-------e2---------epsilon-----------------/
+         \                                                ↗
+          \-------e2---------epsilon--------------------/
     :param a:
     :return: 构建好的闭包
     """
@@ -408,7 +407,7 @@ def get_next_state_with_epsilon_closure(states, new_state, edge):
     return set(list(itertools.chain.from_iterable(ret)))
 
 
-def nfa_to_dfa(nfa, edges):
+def nfa_to_dfa_table(nfa, edges):
     # 排序状态,并取出
     nfa.sort_states()
     states = nfa.states
@@ -587,6 +586,15 @@ def dfa_minimize(dfa):
 
         # 赋新值
         to_be_classified = new_groups
+
+    # 将初始状态放置在0位置
+    first = None
+    for x in to_be_classified:
+        if 0 in x:
+            first = x
+            break
+    to_be_classified.remove(first)
+    to_be_classified.insert(0, first)
 
     # cons dfa
     states = get_states_from_group(to_be_classified, states)

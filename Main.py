@@ -8,6 +8,7 @@ INPUT_PATH = "input.txt"
 def test_preprocess():
     s = {'t1': 'abc', 't2': 'ab|c', 't3': 'b|a*'}
     s = preprocess(s)
+    s = preprocess({'t': '(ac|b*)*b|c'})
     print(s)
 
 
@@ -67,7 +68,7 @@ def test_nfa_to_dfa():
     edges = collect_edges(a)
     edges = sorted(edges)
     print(edges)
-    s = nfa_to_dfa(a, edges)
+    s = nfa_to_dfa_table(a, edges)
     # s.show()
     s.show_simple()
 
@@ -80,7 +81,7 @@ def test_table_to_dfa():
     # a.show()
     edges = collect_edges(a)
     edges = sorted(edges)
-    table = nfa_to_dfa(a, edges)
+    table = nfa_to_dfa_table(a, edges)
     dfa = convert_table_to_dfa(table, a)
     dfa.show()
 
@@ -95,7 +96,7 @@ def test_minimize_dfa():
     a.sort_states()
     edges = collect_edges(a)
     # edges = sorted(edges)
-    table = nfa_to_dfa(a, edges)
+    table = nfa_to_dfa_table(a, edges)
     dfa = convert_table_to_dfa(table, a)
     # x = classes_through_edges(4, dfa.states, [[],[x.id for x in dfa.states]], edges)
     x = dfa_minimize(dfa)
@@ -104,17 +105,36 @@ def test_minimize_dfa():
 
 
 def test_lex_output():
-    s = {'t1': 'abc', 't2': 'ab|c', 't3': 'b|a*'}
+    s = lex_input("./input.txt")
+    # s = {'t1': 'abc', 't2': 'ab|c', 't3': 'b|a*'}
     s = preprocess(s)
+    print(s)
     a = reg_to_nfa(s)
     a.sort_states()
     edges = collect_edges(a)
-    table = nfa_to_dfa(a, edges)
+    table = nfa_to_dfa_table(a, edges)
     dfa = convert_table_to_dfa(table, a)
     x = dfa_minimize(dfa)
     print(*[t.to_output_file() for t in x.states], sep='\n')
     import LexOutput
-    LexOutput.my_out_put("./testPython.py", dfa)
+    LexOutput.my_out_put("./lex.py", dfa)
+
+
+def run(ipath, opath):
+    in_text = lex_input(ipath)
+    regs = preprocess(in_text)
+    print(regs)
+    nfa = reg_to_nfa(regs)
+    nfa.sort_states()
+    # nfa.show()
+    edges = collect_edges(nfa)
+    dfa_table = nfa_to_dfa_table(nfa, edges)
+    dfa = convert_table_to_dfa(dfa_table, nfa)
+    # dfa.show()
+    min_dfa = dfa_minimize(dfa)
+    min_dfa.show()
+    import LexOutput
+    LexOutput.my_out_put(opath, min_dfa)
 
 
 if __name__ == '__main__':
@@ -126,4 +146,12 @@ if __name__ == '__main__':
     # test_nfa_to_dfa()
     # test_table_to_dfa()
     # test_minimize_dfa()
-    test_lex_output()
+    # test_lex_output()
+
+    import sys
+    if len(sys.argv) < 2:
+        print('未指定完全输入输出路径')
+        quit()
+    input_path = sys.argv[1]
+    output_path = sys.argv[2]
+    run(input_path, output_path)

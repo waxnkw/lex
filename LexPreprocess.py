@@ -1,8 +1,8 @@
 general_ops = ['.', '*', '|', '(', ')']
 normal_ops = ['.', '*', '|']
 ops_rule = {
-    '.': 3,
-    '*': 2,
+    '.': 2,
+    '*': 3,
     '|': 1,
 }
 
@@ -43,17 +43,20 @@ def add_points(reg):
 
         if (next_c not in general_ops and c not in general_ops) \
             or (c not in general_ops and next_c == '(') \
-            or (c == ')' and next_c not in general_ops):
+            or (c == ')' and next_c not in general_ops) \
+            or (c == '*' and next_c not in general_ops) \
+            or (c == '*' and next_c == '('):
             ret += '.'
-
     return ret
 
 
 def prefix_to_suffix(reg):
     expression = ''
     ops = []
+    # 去掉*, 当成普通符号
+    local_ops = [x for x in normal_ops if x != '*']
     for item in reg:
-        if item in normal_ops:
+        if item in local_ops:
             while len(ops) >= 0:
                 if len(ops) == 0:
                     ops.append(item)
